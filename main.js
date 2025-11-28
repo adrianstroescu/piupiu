@@ -2,20 +2,37 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-// Socket.IO connection - make sure it's defined globally first
+// Socket.IO connection - gracefully handle if not available
 let socket;
 const otherPlayers = {};
 
-// Check if io is available (for local testing without Socket.IO)
+// Check if io is available and server is reachable
 if (typeof io !== 'undefined') {
-    socket = io();
+    try {
+        socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.warn('Socket.IO connection failed, running in single-player mode');
+        });
+    } catch (e) {
+        console.warn('Socket.IO not available, running in single-player mode');
+        socket = createDummySocket();
+    }
 } else {
     console.warn('Socket.IO not loaded, running in single-player mode');
-    // Create a dummy socket object
-    socket = {
+    socket = createDummySocket();
+}
+
+function createDummySocket() {
+    return {
         on: () => {},
         emit: () => {},
-        id: 'local-player'
+        id: 'local-player-' + Math.random().toString(36).substr(2, 9)
     };
 }
 

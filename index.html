@@ -32,9 +32,11 @@
         A / ← - Turn Left<br>
         D / → - Turn Right<br>
         SPACE - Brake<br>
-        <strong style="color: #ffaa00;">CLICK - Shoot!</strong>
+        <strong style="color: #ffaa00;">CLICK - Shoot!</strong><br>
+        <span id="mode" style="color: yellow;">Mode: Checking...</span>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Socket.IO - optional for multiplayer -->
+    <script src="/socket.io/socket.io.js" onerror="console.log('Single player mode')"></script>
     <script type="importmap">
         {
             "imports": {
@@ -44,5 +46,18 @@
         }
     </script>
     <script type="module" src="main.js"></script>
+    <script>
+        // Update mode indicator
+        setTimeout(() => {
+            const mode = document.getElementById('mode');
+            if (typeof io === 'undefined') {
+                mode.textContent = 'Mode: Single Player';
+                mode.style.color = 'orange';
+            } else {
+                mode.textContent = 'Mode: Multiplayer';
+                mode.style.color = 'lime';
+            }
+        }, 500);
+    </script>
 </body>
 </html>
