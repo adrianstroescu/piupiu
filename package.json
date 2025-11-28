@@ -1,0 +1,13 @@
+{
+  "name": "threejs-multiplayer-game",
+  "version": "1.0.0",
+  "description": "Multiplayer 3D car shooter game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  }
+}
