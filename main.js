@@ -891,17 +891,32 @@ function createNPC(name, x, z) {
     return npcGroup;
 }
 
+// NPC spawn positions
+const npcSpawnPoints = [
+    { x: -5, z: 8 },
+    { x: 8, z: -6 },
+    { x: -12, z: -8 },
+    { x: 15, z: 5 },
+    { x: -18, z: 3 },
+    { x: 10, z: 10 },
+    { x: -8, z: -12 },
+    { x: 20, z: -8 },
+    { x: -15, z: 12 },
+    { x: 5, z: -15 }
+];
+
 // Create NPCs
-createNPC('Alexa', -5, 8);
-createNPC('Alexa', 8, -6);
-createNPC('Alexa', -12, -8);
-createNPC('Alexa', 15, 5);
-createNPC('Alexa', -18, 3);
-createNPC('Alexa', 10, 10);
-createNPC('Alexa', -8, -12);
-createNPC('Alexa', 20, -8);
-createNPC('Alexa', -15, 12);
-createNPC('Alexa', 5, -15);
+npcSpawnPoints.forEach(pos => {
+    createNPC('Alexa', pos.x, pos.z);
+});
+
+// Function to respawn NPC after delay
+function respawnNPC(x, z) {
+    setTimeout(() => {
+        createNPC('Alexa', x, z);
+        console.log('👤 NPC Respawned at', x, z);
+    }, 10000); // 10 seconds
+}
 
 // Update NPC characters
 function updateNPCCharacters() {
@@ -1257,16 +1272,24 @@ function updateProjectiles() {
                 // Hit!
                 createExplosion(npc.mesh.position.x, npc.mesh.position.y + 1, npc.mesh.position.z);
                 
+                // Store position for respawn
+                const spawnX = npc.mesh.position.x;
+                const spawnZ = npc.mesh.position.z;
+                
                 // Notify server about NPC hit
                 socket.emit('npcHit', {
-                    x: npc.mesh.position.x,
-                    z: npc.mesh.position.z
+                    x: spawnX,
+                    z: spawnZ
                 });
                 
                 scene.remove(npc.mesh);
                 npcCharacters.splice(j, 1);
                 hit = true;
                 console.log(`🎯 Shot ${npc.name}! NPCs remaining: ${npcCharacters.length}`);
+                
+                // Schedule respawn after 10 seconds
+                respawnNPC(spawnX, spawnZ);
+                
                 break;
             }
         }
