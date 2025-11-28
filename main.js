@@ -2,9 +2,22 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-// Socket.IO connection
-const socket = io();
+// Socket.IO connection - make sure it's defined globally first
+let socket;
 const otherPlayers = {};
+
+// Check if io is available (for local testing without Socket.IO)
+if (typeof io !== 'undefined') {
+    socket = io();
+} else {
+    console.warn('Socket.IO not loaded, running in single-player mode');
+    // Create a dummy socket object
+    socket = {
+        on: () => {},
+        emit: () => {},
+        id: 'local-player'
+    };
+}
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -591,14 +604,16 @@ console.log('Car created, position:', carMesh ? carMesh.position : 'undefined');
 // Multiplayer networking
 socket.on('currentPlayers', (players) => {
     Object.keys(players).forEach((id) => {
-        if (id !== socket.id) {
+        if (socket.id && id !== socket.id) {
             addOtherPlayer(id, players[id]);
         }
     });
 });
 
 socket.on('newPlayer', (playerInfo) => {
-    addOtherPlayer(playerInfo.id, playerInfo);
+    if (playerInfo.id !== socket.id) {
+        addOtherPlayer(playerInfo.id, playerInfo);
+    }
 });
 
 socket.on('playerMoved', (playerInfo) => {
